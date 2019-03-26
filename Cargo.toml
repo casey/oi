@@ -1,0 +1,8 @@
+[package]
+name        = "oi"
+version     = "0.0.0"
+description = "📍 Location-annotated io::Errors"
+authors     = ["Casey Rodarmor <casey@rodarmor.com>"]
+edition     = "2018"
+license     = "CC0-1.0"
+homepage    = "https://github.com/casey/just"
