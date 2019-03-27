@@ -1,70 +1,31 @@
 use std::{
-  fmt::{self, Display, Formatter},
+  fmt::{self, Debug, Formatter},
   net::SocketAddr,
-  path::{Path, PathBuf},
-  process::Command,
+  path::PathBuf,
 };
 
-/// Location where an io::Error might occur
-#[derive(Debug, Clone, Eq, PartialEq)]
-pub enum Location {
-  /// Path to a file
-  File(PathBuf),
-  /// Unnamed temporary file
-  Tempfile,
-  /// Terminal
-  Terminal,
-  /// Standard input
-  Stdin,
-  /// Standard output
-  Stdout,
-  /// Standard error
-  Stderr,
-  /// Network address
-  Address(SocketAddr),
-  /// Command
-  Command(String),
-  /// Something else
-  Other(String),
+use failure::Fail;
+
+/// Location that an `Error` can occur
+pub trait Location: Debug + Send + Sync + 'static {
+  /// Format the location and error for display
+  fn fmt_error(&self, f: &mut Formatter, error: &dyn Fail) -> fmt::Result;
 }
 
-impl From<PathBuf> for Location {
-  fn from(path: PathBuf) -> Location {
-    Location::File(path)
+impl Location for PathBuf {
+  fn fmt_error(&self, f: &mut Formatter, error: &dyn Fail) -> fmt::Result {
+    write!(f, "{}: {}", self.display(), error)
   }
 }
 
-impl From<&Path> for Location {
-  fn from(path: &Path) -> Location {
-    Location::File(path.to_owned())
+impl Location for SocketAddr {
+  fn fmt_error(&self, f: &mut Formatter, error: &dyn Fail) -> fmt::Result {
+    write!(f, "{}: {}", self, error)
   }
 }
 
-impl From<SocketAddr> for Location {
-  fn from(address: SocketAddr) -> Location {
-    Location::Address(address)
-  }
-}
-
-impl From<&Command> for Location {
-  fn from(command: &Command) -> Location {
-    Location::Command(format!("{:?}", command))
-  }
-}
-
-impl Display for Location {
-  fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-    use Location::*;
-    match self {
-      File(path) => write!(f, "{}", path.display()),
-      Tempfile => write!(f, "temporary file"),
-      Terminal => write!(f, "terminal"),
-      Stdin => write!(f, "stdin"),
-      Stdout => write!(f, "stdout"),
-      Stderr => write!(f, "stderr"),
-      Address(address) => write!(f, "{}", address),
-      Other(other) => write!(f, "{}", other),
-      Command(command) => write!(f, "{}", command),
-    }
+impl Location for String {
+  fn fmt_error(&self, f: &mut Formatter, error: &dyn Fail) -> fmt::Result {
+    write!(f, "{}: {}", self, error)
   }
 }
