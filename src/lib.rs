@@ -21,6 +21,7 @@
 mod err_at;
 mod error;
 mod location;
+mod site;
 
 /// Location-annotated error
 pub use error::Error;
@@ -30,6 +31,9 @@ pub use err_at::ErrAt;
 
 /// Location that an `Error` can occur
 pub use location::Location;
+
+/// Optional enum for use as Location with variants for common io error locations
+pub use site::Site;
 
 /// Location-annotated Result
 pub type Result<T, E, L> = std::result::Result<T, Error<E, L>>;
