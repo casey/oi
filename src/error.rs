@@ -1,33 +1,34 @@
-use std::{
-  error,
-  fmt::{self, Display, Formatter},
-  io,
-};
+use std::fmt::{self, Display, Formatter};
+
+use failure::{Backtrace, Fail};
 
 use crate::location::Location;
 
 /// Location-annotated io::Error with a user-friendly `Display` implementation
 #[derive(Debug)]
-pub struct Error {
-  /// Underlying io::Error
-  pub io_error: io::Error,
-  /// Location at which the io::Error occurred
-  pub location: Location,
+pub struct Error<E: Fail, L: Location> {
+  /// Error
+  pub error: E,
+  /// Location at which `error` occurred
+  pub location: L,
 }
 
-impl Display for Error {
+impl<E: Fail, L: Location> Fail for Error<E, L> {
+  fn name(&self) -> Option<&str> {
+    self.error.name()
+  }
+
+  fn cause(&self) -> Option<&Fail> {
+    self.error.cause()
+  }
+
+  fn backtrace(&self) -> Option<&Backtrace> {
+    self.error.backtrace()
+  }
+}
+
+impl<E: Fail, L: Location> Display for Error<E, L> {
   fn fmt(&self, f: &mut Formatter) -> fmt::Result {
-    write!(f, "{}: {}", self.location, self.io_error)
-  }
-}
-
-impl error::Error for Error {
-  fn description(&self) -> &str {
-    self.io_error.description()
-  }
-
-  #[allow(deprecated)]
-  fn cause(&self) -> Option<&dyn error::Error> {
-    self.io_error.cause()
+    self.location.fmt_error(f, &self.error)
   }
 }

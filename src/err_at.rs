@@ -1,22 +1,18 @@
-use std::io;
+use crate::{error::Error, location::Location};
 
-use crate::{Error, Location, Result};
+use failure::Fail;
 
-/// Extension trait for annotating io::Errors
-pub trait ErrAt<T> {
-  /// Add location if self is an error
-  fn err_at<L: Into<Location>>(self, location: L) -> Result<T>;
+pub trait ErrAt<T, E: Fail> {
+  /// Iff self.is_err() annotate with location
+  fn err_at<L: Location, I: Into<L>>(self, location: I) -> Result<T, Error<E, L>>;
 }
 
-/// Extend io::Result with err_at
-impl<T> ErrAt<T> for io::Result<T> {
-  fn err_at<L: Into<Location>>(self, location: L) -> Result<T> {
+impl<T, E: Fail> ErrAt<T, E> for Result<T, E> {
+  fn err_at<L: Location, I: Into<L>>(self, location: I) -> Result<T, Error<E, L>> {
     match self {
-      // pass through ok value
       Ok(ok) => Ok(ok),
-      // annotate err with location
-      Err(io_error) => Err(Error {
-        io_error,
+      Err(error) => Err(Error {
+        error,
         location: location.into(),
       }),
     }
