@@ -34,22 +34,30 @@ trait for error locations, an `ErrAt` trait that extends `Result` with an
 type as an alias for the more cumbersome `Result<T, Error<E, L>>`:
 
 ```rust
+use std::fmt::{self, Debug, Formatter};
+
+use failure::Fail;
+
 pub struct Error<E: Fail, L: Location> {
   pub error: E,
   pub location: L,
 }
+
+pub type Result<T, E, L> = std::result::Result<T, Error<E, L>>;
 
 pub trait Location: Debug + Send + Sync + 'static {
   fn fmt_error(&self, f: &mut Formatter, error: &dyn Fail) -> fmt::Result;
 }
 
 pub trait ErrAt<T, E: Fail> {
-  fn err_at<L: Location, I: Into<L>>(self, location: I) -> Result<T, Error<E, L>>;
+  fn err_at<L: Location, I: Into<L>>(self, location: I) -> Result<T, E, L>;
 }
-
-pub type Result<T, E, L> = std::result::Result<T, Error<E, L>>;
 ```
 
 `Location` is implemented for `PathBuf` and `SocketAddr`, and can easily be implemented
 for custom location types. The one required method, `fmt_error`, gives custom types
 control over how an error-annotated location will be rendered to an error message.
+
+If you'd like to use source code positions as locations, check out the
+[position crate](https://github.com/casey/position), which provides `Position` type
+that represents a source code position, and which also implements `Location`.
