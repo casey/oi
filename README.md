@@ -23,7 +23,7 @@ $ foo
 Configuration.toml: No such file or directory (os error 2)
 ```
 
-`oi` is named after the exclamation, as in [Oi! Oi! Oi!](https://youtu.be/XWLU76o5rEI).
+`oi` is named after the exclamation, as in [Oi! Oi! Oi!](https://youtu.be/_riKXE86Nlk).
 Imagine alerting your users to the location of errors: "Oi! 1.2.3.4 is unreachable!"
 
 ## usage
